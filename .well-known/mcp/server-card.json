@@ -1,0 +1,54 @@
+{
+  "name": "rothy Intelligence API",
+  "description": "E-commerce and business intelligence API for AI agents. Analyze any Shopify store, research Amazon products with Opportunity Scoring, and find qualified sales leads from Google Maps — all via x402 micropayments on Base. No signup required.",
+  "version": "1.0.0",
+  "author": "rothy",
+  "homepage": "https://intelligence-api-production-f532.up.railway.app",
+  "transport": {
+    "type": "http",
+    "url": "https://intelligence-api-production-f532.up.railway.app/mcp"
+  },
+  "tools": [
+    {
+      "name": "shopify_analyze",
+      "description": "Analyze any public Shopify store — products, pricing, collections, installed apps, and theme detection. No API key required.",
+      "endpoint": "GET /shopify/analyze",
+      "price": "$0.08 USDC"
+    },
+    {
+      "name": "shopify_products",
+      "description": "Paginated product catalog from any Shopify store.",
+      "endpoint": "GET /shopify/products",
+      "price": "$0.02 USDC"
+    },
+    {
+      "name": "amazon_search",
+      "description": "Search Amazon products with Opportunity Score (0-100), niche gap detection, and competition analysis.",
+      "endpoint": "GET /amazon/search",
+      "price": "$0.05 USDC"
+    },
+    {
+      "name": "amazon_product",
+      "description": "Deep ASIN analysis with FBA profitability estimate and Opportunity Score.",
+      "endpoint": "GET /amazon/product",
+      "price": "$0.08 USDC"
+    },
+    {
+      "name": "maps_search",
+      "description": "Search Google Maps businesses with Lead Quality Score (0-100). Requires Google Places API key.",
+      "endpoint": "GET /maps/search",
+      "price": "$0.05 USDC"
+    },
+    {
+      "name": "maps_leads",
+      "description": "Find qualified sales leads with outreach hints. Returns hot and warm leads filtered by quality score.",
+      "endpoint": "GET /maps/leads",
+      "price": "$0.10 USDC"
+    }
+  ],
+  "payment": {
+    "protocol": "x402",
+    "network": "base",
+    "currency": "USDC"
+  }
+}
