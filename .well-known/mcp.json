@@ -1,0 +1,16 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "rothy Intelligence API",
+  "name_for_model": "rothy_intelligence",
+  "description_for_human": "E-commerce and business intelligence API. Analyze Shopify stores, Amazon products, and find sales leads from Google Maps.",
+  "description_for_model": "Use this API to analyze Shopify stores (products, pricing, apps), research Amazon products (with Opportunity Score and FBA estimates), and find qualified business leads from Google Maps (with Lead Quality Score and outreach hints). All endpoints require x402 USDC micropayment on Base. Prices range from $0.02 to $0.10 per call.",
+  "auth": {
+    "type": "payment",
+    "protocol": "x402",
+    "network": "base"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "/openapi.json"
+  }
+}

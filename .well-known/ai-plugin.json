@@ -1,0 +1,22 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "rothy Intelligence API",
+  "name_for_model": "rothy_intelligence",
+  "description_for_human": "Analyze Shopify stores, research Amazon products, and find Google Maps sales leads. Pay per use with USDC on Base — no signup required.",
+  "description_for_model": "Intelligence API for e-commerce research. Tools: (1) analyze any Shopify store — products, pricing, theme, apps; (2) search Amazon products with an Opportunity Score that quantifies market gap; (3) get full Amazon product analysis with FBA fee and profit estimates; (4) search Google Maps businesses with a Lead Quality Score; (5) find filtered sales leads with outreach hints. All calls are paid per-use with USDC on Base via the x402 protocol. No API key or account required — just send the x402 payment header.",
+  "auth": {
+    "type": "none"
+  },
+  "payment": {
+    "protocol": "x402",
+    "network": "base",
+    "currency": "USDC"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "/openapi.json"
+  },
+  "logo_url": "",
+  "contact_email": "",
+  "legal_info_url": ""
+}
