@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createPrivateKey, createSign, randomUUID } from "crypto";
 import { paymentMiddlewareFromConfig } from "@x402/express";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
@@ -102,13 +103,71 @@ app.use("/.well-known", express.static(path.join(__dirname, "..", ".well-known")
 app.get("/openapi.json", (_req, res) => {
     res.json(buildOpenAPISpec());
 });
+// ─── CDP JWT helper ───────────────────────────────────────────────────────────
+// Generates a short-lived EdDSA JWT for Coinbase CDP API authentication.
+// The private key may be a raw 32-byte seed, NaCl 64-byte (seed+pub), or PKCS8 DER,
+// all encoded as base64.
+function buildCdpJwt(keyId, privateKeyB64, uri) {
+    const raw = Buffer.from(privateKeyB64, "base64");
+    let der;
+    const pkcs8Header = Buffer.from("302e020100300506032b657004220420", "hex");
+    if (raw.length === 48) {
+        der = raw; // already PKCS8 DER
+    }
+    else if (raw.length === 32) {
+        der = Buffer.concat([pkcs8Header, raw]);
+    }
+    else if (raw.length === 64) {
+        der = Buffer.concat([pkcs8Header, raw.subarray(0, 32)]); // NaCl: first 32 bytes = seed
+    }
+    else {
+        throw new Error(`Unexpected CDP private key length: ${raw.length} bytes`);
+    }
+    const keyObj = createPrivateKey({ key: der, format: "der", type: "pkcs8" });
+    const now = Math.floor(Date.now() / 1000);
+    const header = Buffer.from(JSON.stringify({ alg: "EdDSA", typ: "JWT" })).toString("base64url");
+    const payloadB64 = Buffer.from(JSON.stringify({
+        iss: keyId,
+        sub: keyId,
+        nbf: now,
+        iat: now,
+        exp: now + 120,
+        jti: randomUUID(),
+        uri,
+    })).toString("base64url");
+    const signingInput = `${header}.${payloadB64}`;
+    const signer = createSign("ed25519");
+    signer.update(signingInput);
+    const sig = signer.sign(keyObj).toString("base64url");
+    return `${signingInput}.${sig}`;
+}
 // ─── x402 Payment Middleware ─────────────────────────────────────────────────
 // paymentMiddlewareFromConfig registers the EVM scheme and creates the resource server.
 // Routes not in ROUTES pass through freely (health, discovery, openapi).
-const facilitatorUrl = process.env.FACILITATOR_URL; // undefined → default x402.org/facilitator
-const facilitator = facilitatorUrl
-    ? new HTTPFacilitatorClient({ url: facilitatorUrl })
-    : new HTTPFacilitatorClient();
+const CDP_API_KEY_ID = process.env.CDP_API_KEY_ID;
+const CDP_API_KEY_SECRET = process.env.CDP_API_KEY_SECRET;
+const CDP_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
+const useCdp = !!(CDP_API_KEY_ID && CDP_API_KEY_SECRET);
+const facilitatorUrl = useCdp
+    ? CDP_FACILITATOR_URL
+    : (process.env.FACILITATOR_URL ?? undefined);
+const facilitator = useCdp
+    ? new HTTPFacilitatorClient({
+        url: CDP_FACILITATOR_URL,
+        createAuthHeaders: async () => {
+            const makeHeader = (path) => ({
+                Authorization: `Bearer ${buildCdpJwt(CDP_API_KEY_ID, CDP_API_KEY_SECRET, `${CDP_FACILITATOR_URL}/${path}`)}`,
+            });
+            return {
+                verify: makeHeader("verify"),
+                settle: makeHeader("settle"),
+                supported: makeHeader("supported"),
+            };
+        },
+    })
+    : facilitatorUrl
+        ? new HTTPFacilitatorClient({ url: facilitatorUrl })
+        : new HTTPFacilitatorClient();
 app.use(paymentMiddlewareFromConfig(ROUTES, facilitator, [{ network: BASE_NETWORK, server: new ExactEvmScheme() }]));
 // ─── Paid routes ──────────────────────────────────────────────────────────────
 app.use(shopifyRouter);
@@ -128,7 +187,7 @@ app.listen(PORT, () => {
     console.log(`\n🚀 Intelligence API running on port ${PORT}`);
     console.log(`   Wallet: ${WALLET_ADDRESS}`);
     console.log(`   Network: ${BASE_NETWORK}`);
-    console.log(`   Facilitator: ${facilitatorUrl ?? "https://x402.org/facilitator"}`);
+    console.log(`   Facilitator: ${facilitatorUrl ?? "https://x402.org/facilitator"}${useCdp ? " (CDP JWT auth)" : ""}`);
     console.log(`   Payment protocol: x402 / USDC`);
     console.log(`\n   Paid endpoints:`);
     for (const [route, config] of Object.entries(ROUTES)) {
