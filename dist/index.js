@@ -151,9 +151,35 @@ const useCdp = !!(CDP_API_KEY_ID && CDP_API_KEY_SECRET);
 const facilitatorUrl = useCdp
     ? CDP_FACILITATOR_URL
     : (process.env.FACILITATOR_URL ?? undefined);
+/**
+ * CDP-aware facilitator client that bypasses the /supported network call.
+ *
+ * The x402 SDK calls /supported during initialization to discover what payment
+ * kinds a facilitator accepts. CDP requires JWT auth on ALL endpoints including
+ * /supported, and the endpoint may not conform to the expected x402 response
+ * format. By overriding getSupported() we short-circuit that call and declare
+ * exactly what we know CDP supports (exact scheme on our configured network),
+ * while verify and settle still use full JWT auth via createAuthHeaders.
+ */
+class CdpFacilitatorClient extends HTTPFacilitatorClient {
+    _network;
+    constructor(config) {
+        const { network, ...rest } = config;
+        super(rest);
+        this._network = network;
+    }
+    async getSupported() {
+        return {
+            kinds: [{ x402Version: 1, scheme: "exact", network: this._network }],
+            extensions: [],
+            signers: {},
+        };
+    }
+}
 const facilitator = useCdp
-    ? new HTTPFacilitatorClient({
+    ? new CdpFacilitatorClient({
         url: CDP_FACILITATOR_URL,
+        network: BASE_NETWORK,
         createAuthHeaders: async () => {
             const makeHeader = (path) => ({
                 Authorization: `Bearer ${buildCdpJwt(CDP_API_KEY_ID, CDP_API_KEY_SECRET, `${CDP_FACILITATOR_URL}/${path}`)}`,
