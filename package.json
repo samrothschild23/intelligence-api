@@ -15,13 +15,15 @@
     "@x402/express": "^2.7.0",
     "cheerio": "^1.0.0",
     "dotenv": "^16.5.0",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+        "cors": "^2.8.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+        "@types/cors": "^2.8.17"
   },
   "engines": {
     "node": ">=22"
