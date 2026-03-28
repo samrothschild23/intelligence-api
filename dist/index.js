@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import { createX402Middleware } from "./x402middleware.js";
 import healthRouter from "./routes/health.js";
@@ -24,6 +25,7 @@ app.use((req, _res, next) => {
     next();
 });
 app.use(express.json());
+app.use(cors());
 // ─── Free endpoints ───────────────────────────────────────────────────────────
 app.use(healthRouter);
 app.use("/.well-known", express.static(path.join(__dirname, "..", ".well-known")));
