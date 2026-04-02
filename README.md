@@ -1,5 +1,7 @@
 # rothy Intelligence API
 
+[![MCP Server](https://glama.ai/mcp/servers/samrothschild23/intelligence-api/badge)](https://glama.ai/mcp/servers/samrothschild23/intelligence-api)
+
 An x402-powered intelligence API for Shopify, Amazon, and Google Maps data. AI agents pay per call in USDC on Base — no signup, no API keys, no human in the loop.
 
 ## What This Does
