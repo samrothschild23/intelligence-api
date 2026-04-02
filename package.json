@@ -6,24 +6,26 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
+    "start:mcp": "node dist/mcp-stdio.js",
     "build": "tsc",
     "dev": "ts-node src/index.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@x402/core": "^2.7.0",
     "@x402/evm": "^2.7.0",
     "@x402/express": "^2.7.0",
     "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "express": "^4.21.2",
-        "cors": "^2.8.5"
+    "express": "^4.21.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.14",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2",
-        "@types/cors": "^2.8.17"
+    "typescript": "^5.8.2"
   },
   "engines": {
     "node": ">=22"
